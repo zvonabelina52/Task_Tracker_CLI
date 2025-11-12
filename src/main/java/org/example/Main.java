@@ -1,5 +1,7 @@
 package org.example;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -29,9 +31,59 @@ public class Main {
 
             if(commandValid) {
                 System.out.println("COMMAND CORRECT: " + command);
+                String[] parts = command.split("\\s+", 2);
+                String mainCommand = parts[0];
+
+                switch(mainCommand){
+                    case "add":
+                        addTask(parts[1]);
+                    case "update":
+                        updateTask(parts[1]);
+                    case "delete":
+                        deleteTask(parts[1]);
+                    case "mark-in-progress":
+                        markTaskInProgress(parts[1]);
+                    case "mark-done":
+                        markTaskDone(parts[1]);
+                    case "list":
+                        listTasks(parts[1]);
+                }
             }
         }
         scanner.close();
+    }
+
+    private static void addTask(String part) {
+        try {
+            File taskTrackerFile = new File("task_tracker.json");
+            if (taskTrackerFile.createNewFile()) {
+                System.out.println("File for task tracking created!");
+            } else {
+                System.out.println("File for task tracking already exists.");
+            }
+        } catch (IOException e) {
+            System.out.println("Couldn't create the file for tracking tasks.");
+        }
+    }
+
+    private static void updateTask(String part) {
+
+    }
+
+    private static void deleteTask(String part) {
+
+    }
+
+    private static void markTaskInProgress(String part) {
+
+    }
+
+    private static void markTaskDone(String part) {
+
+    }
+
+    private static void listTasks(String part) {
+
     }
 
     private static boolean checkCommand(String command) {
@@ -47,38 +99,58 @@ public class Main {
         if (!validCommands.contains(mainCommand)) {
             System.out.println("Invalid command. Type 'help' to see the list of available commands.\n");
             return false;
-        } else if(mainCommand.equals("update")) {
-            if (parts.length > 2) {
-                String idPart = parts[1].trim();
-                System.out.println("idPart: " + idPart);
-                if (isNumeric(idPart)) {
-                    System.out.println("Invalid command format. The second argument must be a task ID number.\n");
-                    return false;
-                }
-            } else {
-                System.out.println("Invalid command format. The second argument must be a task ID number and the third a new description.\n");
+        } else if(mainCommand.equals("add")) {
+            if(parts.length < 2) {
+                System.out.println("Invalid command format. The second argument must be a description of the task.\n");
                 return false;
             }
+        }else if(mainCommand.equals("update")) {
+            return validateUpdateCommand(parts, mainCommand);
         } else if (mainCommand.equals("list")) {
-            if (parts.length > 1) {
-                String sub = parts[1].trim();
-                List<String> validSubcommands = List.of("done", "todo", "in-progress");
-                if (!validSubcommands.contains(sub)) {
-                    System.out.println("Invalid list option. Valid options are: done, todo, in-progress.\n");
-                    return false;
-                }
-            }
+            return validateListCommand(parts);
         } else if (mainCommand.equals("delete") || mainCommand.equals("mark-in-progress") || mainCommand.equals("mark-done")) {
-            if (parts.length > 1) {
-                String idPart = parts[1].trim();
-                if (isNumeric(idPart)) {
-                    System.out.println("Invalid command format. The second argument must be a task ID number.\n");
-                    return false;
-                }
-            } else {
-                System.out.println("Missing task ID. Usage example: '" + mainCommand + " <id>'.\n");
+            return validateDeleteAndMarkInProgressCommands(parts, mainCommand);
+        }
+        return true;
+    }
+
+    private static boolean validateListCommand(String[] parts) {
+        if (parts.length > 1) {
+            String sub = parts[1].trim();
+            List<String> validSubcommands = List.of("done", "todo", "in-progress");
+            if (!validSubcommands.contains(sub)) {
+                System.out.println("Invalid list option. Valid options are: done, todo, in-progress.\n");
                 return false;
             }
+        }
+        return true;
+    }
+
+    private static boolean validateUpdateCommand(String[] parts, String mainCommand) {
+        if (parts.length > 1) {
+            String idPart = parts[1].trim();
+            if (isNumeric(idPart)) {
+                System.out.println("Invalid command format. The second argument must be a task ID number.\n");
+                return false;
+            }
+        } else {
+            System.out.println("Missing task ID. Usage example: '" + mainCommand + " 1'.\n");
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean validateDeleteAndMarkInProgressCommands(String[] parts, String mainCommand) {
+        if (parts.length > 2) {
+            String idPart = parts[1].trim();
+            System.out.println("idPart: " + idPart);
+            if (isNumeric(idPart)) {
+                System.out.println("Invalid command format. The second argument must be a task ID number.\n");
+                return false;
+            }
+        } else {
+            System.out.println("Invalid command format. The second argument must be a task ID number and the third a new description.\n");
+            return false;
         }
         return true;
     }
