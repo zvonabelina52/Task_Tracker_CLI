@@ -1,7 +1,10 @@
 package org.example;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -13,6 +16,7 @@ public class Main {
         // to see how IntelliJ IDEA suggests fixing it.
         System.out.println("Hello and welcome to Task Tracker, an app that allows you to track your tasks and manage your to-do list!");
         System.out.println("Type 'help' to see the list of available commands!\n");
+        checkExistenceOfTaskTrackingFile();
 
         Scanner scanner = new Scanner(System.in);
 
@@ -30,7 +34,6 @@ public class Main {
             boolean commandValid = checkCommand(command);
 
             if(commandValid) {
-                System.out.println("COMMAND CORRECT: " + command);
                 String[] parts = command.split("\\s+", 2);
                 String mainCommand = parts[0];
 
@@ -53,17 +56,35 @@ public class Main {
         scanner.close();
     }
 
-    private static void addTask(String part) {
+    private static void checkExistenceOfTaskTrackingFile() {
+        File taskTrackerFile = new File("task_tracker.json");
         try {
-            File taskTrackerFile = new File("task_tracker.json");
             if (taskTrackerFile.createNewFile()) {
-                System.out.println("File for task tracking created!");
+                try (FileWriter myWriter = new FileWriter("task_tracker.json")) {
+                    myWriter.write("{\"tasks\": []}");
+                }
+                System.out.println("Your file for tracking tasks has been created, happy tracking!\n");
             } else {
-                System.out.println("File for task tracking already exists.");
+                System.out.println("Your file for tracking tasks already exists, continue your tracking\n");
             }
         } catch (IOException e) {
             System.out.println("Couldn't create the file for tracking tasks.");
         }
+    }
+
+    private static void readTaskTrackingFileContent(File taskTrackerFile) {
+        try (Scanner reader = new Scanner(taskTrackerFile)) {
+            while (reader.hasNextLine()) {
+                String data = reader.nextLine();
+                System.out.println(data);
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("The file for tracking tasks could not be found.");
+        }
+    }
+
+    private static void addTask(String description) {
+
     }
 
     private static void updateTask(String part) {
@@ -85,6 +106,8 @@ public class Main {
     private static void listTasks(String part) {
 
     }
+
+
 
     private static boolean checkCommand(String command) {
         String[] parts = command.split("\\s+");
